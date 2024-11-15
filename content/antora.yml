@@ -1,12 +1,12 @@
 name: modules
-title: Default Title
+title: RedHatOne 2025
 version: master
 nav:
   - modules/ROOT/nav.adoc
 
 asciidoc:
   attributes:
-    lab_name: "I'm the lab_name var"
+    lab_name: "LAB19 - Deep Dive Into Satellite Troubleshooting"
     release-version: master
     page-pagination: true
     my_var: "foo"
