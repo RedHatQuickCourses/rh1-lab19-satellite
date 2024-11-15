@@ -2,6 +2,7 @@
 
 FIXME: short description
 
+[#bfxactivity]
 == Break-fix activity
 
 FIXME
@@ -9,16 +10,16 @@ FIXME
 . Describe the problem scenario
 . List the success criteria
 . Provide steps for 
-  . Implementing the break
-  . Grading the work
-  . Cleaning up the environment
+  * Implementing the break
+  *  Grading the work
+  * Cleaning up the environment
 
 [source,sh,role=execute]
 ----
 FIXME: Use this syntax to write the commands to be executed in the lab
 ----
 
-[#repositories]
+[#guidedsteps]
 == Guided Steps
 
 FIXME

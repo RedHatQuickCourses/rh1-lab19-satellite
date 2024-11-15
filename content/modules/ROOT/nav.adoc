@@ -1,11 +1,11 @@
 * xref:module-01.adoc[1. Break-fix scenario 1]
-** xref:module-01.adoc#repositories[Break-Fix Activity]
-** xref:module-01.adoc#software[Guided steps]
+** xref:module-01.adoc#bfxactivity[Break-Fix Activity]
+** xref:module-01.adoc#guidedsteps[Guided steps]
 
 * xref:module-02.adoc[2. Break-fix scenario 2]
-** xref:module-02.adoc#prerequisites[Break-Fix Activity]
-** xref:module-02.adoc#container[Guided steps]
+** xref:module-02.adoc#bfxactivity[Break-Fix Activity]
+** xref:module-02.adoc#guidedsteps[Guided steps]
 
 * xref:module-03.adoc[3. Break-fix scenario 3]
-** xref:module-03.adoc#prerequisites[Break-Fix Activity]
-** xref:module-03.adoc#container[Guided steps]
+** xref:module-03.adoc#bfxactivity[Break-Fix Activity]
+** xref:module-03.adoc#guidedsteps[Guided steps]
