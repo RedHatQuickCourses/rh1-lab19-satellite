@@ -1,30 +1,62 @@
-= Break-fix scenario 3
+= Module 3 - Trouble Shooting Perfomance and Implementing a Standard Operating Environment
 
-FIXME: short description
+== Introduction
+
+Administrators will often need to maintain a Satellite Server for a long period of time, as the Satellite Server becomes an integral part of their organization's infrastructure.
+
+The primary goal of this scenario is to investigate performance and maintainance configurations for the Satellite Server, correct misconfigurations, and automate maintainance cycles as part of the Standard Operating Environment Method of deploying Red Hat Satellite.
 
 [#bfxactivity]
-== Break-fix activity
+== Executing the Lab Script
 
-FIXME
 
-. Describe the problem scenario
-. List the success criteria
-. Provide steps for 
-  . Implementing the break
-  . Grading the work
-  . Cleaning up the environment
+In this exercise setup, you first need to access the bastion through `{bastion_public_hostname}` to gain entry into the lab environment. From the terminal on right side, access SSH the node bastion.
 
-[source,sh,role=execute]
+
+[source,sh,role=execute,subs="attributes"]
 ----
-FIXME: Use this syntax to write the commands to be executed in the lab
+ssh {user}@{bastion_public_hostname} -p {bastion_ssh_port}
 ----
 
-[#guidedsteps]
-== Guided Steps
+run the command to break the lab
 
-FIXME
+[source,sh,role=execute,subs="attributes"]
+----
+lab break module3
+----
 
-[source,sh,role=execute]
+== Satellite Performance Tuning
+
+=== Scenario
+
+Other teams in your organization have notified you that the Satellite Server does not seem to be performing well. The Server has had additional memory and CPU added to the virtual machine as your organization has provisioned several thousand hosts and performance managing the hosts is still slow. You have been asked to implement tuning based on the new size of the Satellite Server.
+
+Inspect the new number of CPU cores
 ----
-FIXME: Use this syntax to write the commands to be executed in the lab
+nproc
 ----
+
+Inspect the new amount of memory
+----
+free -h 
+----
+
+Inspect the current tuning
+----
+grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
+----
+
+Based upon the results of the above commands, the Satellite has 8 cores and 32 Gi of RAM. The recommended tuning profile is Medium, which does not match the default tuning profile that is currently applied.
+
+Apply the Medium tuning profile
+----
+satellite-installer --tuning medium
+----
+
+Verify that the Profile has been applied
+----
+grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
+----
+
+
+
