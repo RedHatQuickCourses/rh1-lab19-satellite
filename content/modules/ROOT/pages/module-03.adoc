@@ -58,5 +58,44 @@ Verify that the Profile has been applied
 grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
 ----
 
+== Automate the Cleanup of old content views
 
+The number of Content View versions will continue to grow as Satellite continues to be utilized in an organization. In the past manual or scripted intevention was required to clean these obseleted Content Views up. Today, Satellite has automated tooling to perform these actions.
+
+=== Scenario
+
+The infrastructure team in your organization has been experimenting with different combinations of packages and content filters in the Satellite Server. This has created a large number of content view versions on the Satellite that are obselete.
+
+View the content view versions on the Satellite and the Lifecycle Environments in which they are published:
+----
+hammer content-view list
+----
+
+Note that the <insert content view name here> Content View has 15 published versions.
+
+Let's clean up these up:
+----
+hammer content-view purge --name <content-view-name> --organization <organization-name>
+----
+
+View that the content views versions have been purged:
+----
+hammer content-view version list --content-view <content-view-name>
+----
+
+
+By default this will keep the content-view versions that are promoted to Lifecycle Environments, and 3 unused versions.
+After consulting with the infrastructure team, they have agreed that they only need 1 unused version.
+Modyfy the previous command, by adding "--count 1" to the previous command to keep only 1 unused version
+----
+hammer content-view purge --name <content-view-name> --organization <organization-name> --count 1
+----
+
+Verify that the content-view versions have been purged:
+View that the content views versions have been purged:
+----
+hammer content-view version list --content-view <content-view-name>
+----
+
+== Cleanup Orphaned Pulp Content
 
