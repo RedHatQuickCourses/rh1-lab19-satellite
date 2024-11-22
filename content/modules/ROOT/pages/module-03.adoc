@@ -1,30 +1,218 @@
-= Break-fix scenario 3
+= Module 3 - Trouble Shooting Perfomance and Implementing a Standard Operating Environment
 
-FIXME: short description
+== Introduction
+
+Administrators will often need to maintain a Satellite Server for a long period of time, as the Satellite Server becomes an integral part of their organization's infrastructure.
+
+The primary goal of this scenario is to investigate performance and maintainance configurations for the Satellite Server, correct misconfigurations, and automate maintainance cycles as part of the Standard Operating Environment Method of deploying Red Hat Satellite.
 
 [#bfxactivity]
-== Break-fix activity
+== Executing the Lab Script
 
-FIXME
 
-. Describe the problem scenario
-. List the success criteria
-. Provide steps for 
-  . Implementing the break
-  . Grading the work
-  . Cleaning up the environment
+In this exercise setup, you first need to access the bastion through `{bastion_public_hostname}` to gain entry into the lab environment. From the terminal on right side, access SSH the node bastion.
 
-[source,sh,role=execute]
+
+[source,sh,role=execute,subs="attributes"]
 ----
-FIXME: Use this syntax to write the commands to be executed in the lab
+ssh {user}@{bastion_public_hostname} -p {bastion_ssh_port}
 ----
 
-[#guidedsteps]
-== Guided Steps
+run the command to break the lab
 
-FIXME
+[source,sh,role=execute,subs="attributes"]
+----
+lab break module3
+----
 
-[source,sh,role=execute]
+== Satellite Performance Tuning
+
+=== Scenario
+
+Other teams in your organization have notified you that the Satellite Server does not seem to be performing well. The Server has had additional memory and CPU added to the virtual machine as your organization has provisioned several thousand hosts and performance managing the hosts is still slow. You have been asked to implement tuning based on the new size of the Satellite Server.
+
+Inspect the new number of CPU cores
 ----
-FIXME: Use this syntax to write the commands to be executed in the lab
+nproc
 ----
+
+Inspect the new amount of memory
+----
+free -h 
+----
+
+Inspect the current tuning
+----
+grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
+----
+
+Based upon the results of the above commands, the Satellite has 8 cores and 32 Gi of RAM. The recommended tuning profile is Medium, which does not match the default tuning profile that is currently applied.
+
+Apply the Medium tuning profile
+----
+satellite-installer --tuning medium
+----
+
+Verify that the Profile has been applied
+----
+grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
+----
+
+== Automate the Cleanup of old content views
+
+The number of Content View versions will continue to grow as Satellite continues to be utilized in an organization. In the past manual or scripted intevention was required to clean these obseleted Content Views up. Today, Satellite has automated tooling to perform these actions.
+
+=== Scenario
+
+The infrastructure team in your organization has been experimenting with different combinations of packages and content filters in the Satellite Server. This has created a large number of content view versions on the Satellite that are obselete.
+
+View the content view versions on the Satellite and the Lifecycle Environments in which they are published:
+----
+hammer content-view list
+----
+
+Note that the <insert content view name here> Content View has 15 published versions.
+
+Let's clean up these up:
+----
+hammer content-view purge --name <content-view-name> --organization <organization-name>
+----
+
+View that the content views versions have been purged:
+----
+hammer content-view version list --content-view <content-view-name>
+----
+
+
+By default this will keep the content-view versions that are promoted to Lifecycle Environments, and 3 unused versions.
+After consulting with the infrastructure team, they have agreed that they only need 1 unused version.
+Modyfy the previous command, by adding "--count 1" to the previous command to keep only 1 unused version
+----
+hammer content-view purge --name <content-view-name> --organization <organization-name> --count 1
+----
+
+Verify that the content-view versions have been purged:
+View that the content views versions have been purged:
+----
+hammer content-view version list --content-view <content-view-name>
+----
+
+== Cleanup Orphaned Pulp Content
+
+Content accumulates on a Satellite Server and the on-disk size of content appears to constantly grow. When an administrator deletes a Content View or disables a Repository that disk is not immediately reclaimed. This content is called Orphaned Pulp Content.
+
+Satellite implements a Cronjob in /etc/cron.d/katello to remove the orphaned content, but in many cases, such as a full or near full /var/lib/pulp volume it is useful to to execute the command ad-hoc.
+
+=== Senario 
+
+In the last scenario you pruned many content views, there is likely orphaned content on the Satellite Server that needs to be removed.
+
+View the Cronjob on the Satellite:
+----
+cat /etc/cron.d/katello
+----
+
+The Script for initiating removal of orphaned content automatically executes at 10PM local time every Sunday. 
+
+Check the amount of unitlized disk in /var/lib/pulp
+
+----
+du /var/lib/pulp
+----
+
+Execute the command to cleanup orphaned content
+----
+foreman-rake katello:delete_orphaned_content RAILS_ENV=production
+----
+
+We can then Query the remove orphans task to check it's status:
+----
+# certs="--cacert /etc/pki/katello/certs/katello-server-ca.crt --cert /etc/pki/katello/certs/pulp-client.crt --key /etc/pki/katello/private/pulp-client.key"
+# hname=$(hostname -f)
+# curl -s $certs https://${hname}/pulp/api/v3/tasks/?name=pulpcore.app.tasks.orphan.orphan_cleanup | json_reformat
+----
+
+Successfull output will look like this:
+----
+{
+            "pulp_href": "/pulp/api/v3/tasks/0192d0da-4100-74f4-8e3c-72ce95ddf6e4/",
+            "pulp_created": "2024-10-28T02:00:17.409026Z",
+            "state": "completed",
+            "name": "pulpcore.app.tasks.orphan.orphan_cleanup",
+            "logging_cid": "ac115363680b4b04ba86d5a510a81f39",
+            "created_by": "/pulp/api/v3/users/2/",
+            "started_at": "2024-10-28T02:00:21.480234Z",
+            "finished_at": "2024-10-28T02:00:28.576079Z",
+            "error": null,
+            "worker": null,
+            "parent_task": null,
+            "child_tasks": [
+
+            ],
+            "task_group": null,
+            "progress_reports": [
+                {
+                    "message": "Clean up orphan Content",
+                    "code": "clean-up.content",
+                    "state": "completed",
+                    "total": 2599,
+                    "done": 2599,
+                    "suffix": null
+                },
+                {
+                    "message": "Clean up orphan Artifacts",
+                    "code": "clean-up.artifacts",
+                    "state": "completed",
+                    "total": 17,
+                    "done": 17,
+                    "suffix": null
+                }
+            ],
+            "created_resources": [
+
+            ],
+            "reserved_resources_record": [
+                "/api/v3/orphans/cleanup/",
+                "shared:/pulp/api/v3/domains/0191ddfd-4882-782d-b5c5-910afce923db/"
+            ]
+        }
+----
+
+Then check the size of /var/lib/pulp once the task is completed:
+----
+du /var/lib/pulp
+----
+
+== Automate Cleanup of Old Tasks
+
+Cleaning of the tasks on the Satellite server is an important task that should be enabled. If not done then over a period of time tasks will get accumulated, impacting the performance of the Satellite server.
+This also affects the upgrade of the Satellite server when there is a large number of tasks that are present on the satellite server which is not cleaned. This generally creates issues during upgrades, when commands to clean the system are run, but due to a large number of tasks,
+there isn't enough space present so the cleaning also fails resulting in failing of Satellite upgrades
+
+==== Scenario
+Every upgrade of the Satellite Server you have noticed that the satellite-maintain command has reported that there are many old tasks to clean up. This has exteneded upgrade window of the Satellite Server and has also impacted performance of searching for the status of Remote Execution jobs on the Satellite.
+
+=== Task
+
+Check to see if automatic task cleanup is enabled
+----
+satellite-installer --help | grep foreman-plugin-tasks-automatic-cleanup
+   --foreman-plugin-tasks-automatic-cleanup                               Enable automatic task cleanup using a cron job (current: false)
+----
+
+Note that the automatic cleanup is disabled, enable it.
+----
+satellite-installer --foreman-plugin-tasks-automatic-cleanup true
+----
+
+View the schedule for the execution of the task cleanup 
+----
+satellite-installer --help | grep foreman-plugin-tasks-cron-line
+   --foreman-plugin-tasks-cron-line                                       Cron line defining when the cleanup cron job should run (current: "45 19 * * *")
+----
+
+This means that the automated cronjob will run at 7:45PM every day.
+
+== Scheduling Capsule Syncs
+
+== Scheduling Satellite Backups
