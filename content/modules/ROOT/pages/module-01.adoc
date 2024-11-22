@@ -269,15 +269,15 @@ then search for this task id on the Satellite task page:(https://satellite.examp
 
 Click on the "Action" hyperlink for this task, then click on the button `Dynflow Console`. This should open a new tab where you are seeing all the subtasks that make up the foreman task of a Capsule sync. The opening of the page should default to having the `Run` tab selected:
 
-<INSERT IMAGE /home/rdu/tasander/Pictures/Vivaldi Captures/2024-11-21 14.52.46 bombsat615.d.sysmgmt.cee.redhat.com ffb5923aa30b.png>
+image::macros:/home/rdu/tasander/git/rh1-lab19-satellite/content/modules/ROOT/assets/images/run.png[Run_tab,200,100]
 
 Locate the subtask with the label id `Actions::Pulp3::CapsuleContent::Sync` and click on it to expand it.
 
-<INSERT IMAGE /home/rdu/tasander/Pictures/Vivaldi Captures/2024-11-21 14.55.25 bombsat615.d.sysmgmt.cee.redhat.com d038d4f52b0a.png>
+image::macros:/home/rdu/tasander/git/rh1-lab19-satellite/content/modules/ROOT/assets/images/sub-task_label.png[sub-task_label,200,100]
 
 Scroll down to the section where you see `created_resources` like the example below:
 
-<INSERT IMAGE /home/rdu/tasander/Pictures/Vivaldi Captures/2024-11-21 14.58.35 bombsat615.d.sysmgmt.cee.redhat.com a80771b501f2.png >
+image::macros:/home/rdu/tasander/git/rh1-lab19-satellite/content/modules/ROOT/assets/images/created_resources.png.png[created_resources,200,100]
 
 These are the HREFs that are created on the Capsule for the RHEL 9 repository and its Publication. The Publication is what the Capsule uses from the requested endpoint provided by the client to find the HREF for the pulp repository.
 
