@@ -99,3 +99,87 @@ hammer content-view version list --content-view <content-view-name>
 
 == Cleanup Orphaned Pulp Content
 
+Content accumulates on a Satellite Server and the on-disk size of content appears to constantly grow. When an administrator deletes a Content View or disables a Repository that disk is not immediately reclaimed. This content is called Orphaned Pulp Content.
+
+Satellite implements a Cronjob in /etc/cron.d/katello to remove the orphaned content, but in many cases, such as a full or near full /var/lib/pulp volume it is useful to to execute the command ad-hoc.
+
+=== Senario 
+
+In the last scenario you pruned many content views, there is likely orphaned content on the Satellite Server that needs to be removed.
+
+View the Cronjob on the Satellite:
+----
+cat /etc/cron.d/katello
+----
+
+The Script for initiating removal of orphaned content automatically executes at 10PM local time every Sunday. 
+
+Check the amount of unitlized disk in /var/lib/pulp
+
+----
+du /var/lib/pulp
+----
+
+Execute the command to cleanup orphaned content
+----
+foreman-rake katello:delete_orphaned_content RAILS_ENV=production
+----
+
+We can then Query the remove orphans task to check it's status:
+----
+# certs="--cacert /etc/pki/katello/certs/katello-server-ca.crt --cert /etc/pki/katello/certs/pulp-client.crt --key /etc/pki/katello/private/pulp-client.key"
+# hname=$(hostname -f)
+# curl -s $certs https://${hname}/pulp/api/v3/tasks/?name=pulpcore.app.tasks.orphan.orphan_cleanup | json_reformat
+----
+
+Successfull output will look like this:
+----
+{
+            "pulp_href": "/pulp/api/v3/tasks/0192d0da-4100-74f4-8e3c-72ce95ddf6e4/",
+            "pulp_created": "2024-10-28T02:00:17.409026Z",
+            "state": "completed",
+            "name": "pulpcore.app.tasks.orphan.orphan_cleanup",
+            "logging_cid": "ac115363680b4b04ba86d5a510a81f39",
+            "created_by": "/pulp/api/v3/users/2/",
+            "started_at": "2024-10-28T02:00:21.480234Z",
+            "finished_at": "2024-10-28T02:00:28.576079Z",
+            "error": null,
+            "worker": null,
+            "parent_task": null,
+            "child_tasks": [
+
+            ],
+            "task_group": null,
+            "progress_reports": [
+                {
+                    "message": "Clean up orphan Content",
+                    "code": "clean-up.content",
+                    "state": "completed",
+                    "total": 2599,
+                    "done": 2599,
+                    "suffix": null
+                },
+                {
+                    "message": "Clean up orphan Artifacts",
+                    "code": "clean-up.artifacts",
+                    "state": "completed",
+                    "total": 17,
+                    "done": 17,
+                    "suffix": null
+                }
+            ],
+            "created_resources": [
+
+            ],
+            "reserved_resources_record": [
+                "/api/v3/orphans/cleanup/",
+                "shared:/pulp/api/v3/domains/0191ddfd-4882-782d-b5c5-910afce923db/"
+            ]
+        }
+----
+
+Then check the size of /var/lib/pulp once the task is completed:
+----
+du /var/lib/pulp
+----
+
