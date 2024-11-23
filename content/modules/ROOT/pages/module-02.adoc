@@ -1,30 +1,224 @@
-= Break-fix scenario 2
+= Module 2 - Troubleshooting Client Connectivity
 
-FIXME: short description
+== Introduction
 
-[#bfxactivity]
-== Break-fix activity
+A client not registered with Satellite is unable to access up to date content, cannot be centrally managed and does not benefit from the intelligence provided through Red Hat Insights. 
+Remote execution enables running jobs on hosts remotely from Capsules using shell scripts or Ansible tasks and playbooks, making it easier for admins to automate tasks on clients.
+Capsules servers mirror content from Satellite server, bringing content and Satellite services closer to hosts in different geographical or logical locations. Connectivity issues can result in corrupt or inconsistent data being served to clients.
 
-FIXME
 
-. Describe the problem scenario
-. List the success criteria
-. Provide steps for 
-  * Implementing the break
-  *  Grading the work
-  * Cleaning up the environment
+== Environment
+* Red Hat Satellite Server 6.15
+* Red Hat Satellite Capsule 6.15
+* RHEL 9 client (not registered with Satellite or Capsule)
 
-[source,sh,role=execute]
+
+[#scenario A]
+== [1] Troubleshoot client registration errors
+
+=== Scenario
+
+Registering a client with Satellite fails.
+NOTE: The goal of this scenario is to investigate and resolve failures which can prevent a client from registering with Red Hat Satellite.
+
+=== Executing the lab start script
+
+To begin the lab, access the bastion node using SSH using the terminal on the right.
+
+[source,sh,role=execute,subs="attributes"]
 ----
-FIXME: Use this syntax to write the commands to be executed in the lab
+# ssh root@{bastion_public_hostname}
 ----
 
-[#guidedsteps]
-== Guided Steps
 
-FIXME
+Run the following command to introduce the registration failure
 
-[source,sh,role=execute]
+[source,sh,role=execute,subs="attributes"]
 ----
-FIXME: Use this syntax to write the commands to be executed in the lab
+# lab break client_registration
+----
+
+
+=== Task
+
+On the RHEL 9 client, check the registration status
+
+[source,sh,role=execute,subs="attributes"]
+----
+# subscription-manager status
+----
+
+On the Satellite server, generate a Global Registration command (insecure option used to disable SSL validation)
+
+[source,sh,role=execute,subs="attributes"]
+----
+# hammer host-registration generate-command \
+--activation-keys "My_Activation_Key" \
+--insecure true
+----
+
+On the RHEL 9 client, paste the generated registration command and execute
+
+Note: No route to Satellite host
+
+
+=== Grade, Fix, Cleanup
+To grade your work, run the following command: 
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab grade client_registration
+----
+
+If you encounter an issue and require assistance with completing the lab, run the following command:
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab fix client_registration
+----
+
+Finally, clean the lab environment before proceeding to the next exercise.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab clean client_registration
+----
+
+
+
+
+
+[#scenario B]
+== [2] Troubleshoot Remote Execution
+
+=== Scenario
+
+Running a remote execution job on a client fails.
+NOTE: The goal of this scenario is to investigate and remediate issues preventing remote execution of jobs.
+
+=== Executing the lab start script
+
+To begin the lab, access the bastion node using SSH using the terminal on the right.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# ssh root@{bastion_public_hostname}
+----
+
+
+Run the following command to introduce remote execution failure (host subnet not assigned to Capsule in Satellite)
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab break client_execution
+----
+
+
+=== Task
+
+On the Satellite server UI, create remote execution job to execute on client.  `Monitor` -> `Jobs` -> `Run job`.
+
+Issue: Job failed because no Capsule found to execute job
+
+Configure `Fallback to Any Capsule` setting
+
+[source,sh,role=execute,subs="attributes"]
+----
+# hammer settings set \
+--name=remote_execution_fallback_proxy \
+--value=true
+----
+
+
+=== Grade, Fix, Cleanup
+To grade your work, run the following command: 
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab grade client_execution
+----
+
+If you encounter an issue and require assistance with completing the lab, run the following command:
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab fix client_execution
+----
+
+Finally, clean the lab environment before proceeding to the next exercise.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab clean client_execution
+----
+
+
+
+
+
+[#scenario C]
+== [3] Troubleshoot Capsule Connectivity
+
+=== Scenario
+
+Capsule 
+NOTE: The goal of this scenario is to investigate and remediate issues affecting connectivity between clients and Red Hat Satellite Capsule.
+
+
+=== Executing the lab start script
+
+To begin the lab, access the bastion node using SSH using the terminal on the right.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# ssh root@{bastion_public_hostname}
+----
+
+
+Run the following command to introduce the Capsule connectivity failure
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab break client_capsule
+----
+
+
+=== Task
+
+On the client (already registered to Capsule), check the registration status
+
+[source,sh,role=execute,subs="attributes"]
+----
+# dnf install package
+----
+
+On the Satellite server, check certificate exchange with Capsule
+
+[source,sh,role=execute,subs="attributes"]
+----
+# curl -v https://capsulerserver FDQN/pulp/api/v2/status/ | python -m json.tool  
+# curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://capsule server FDQN:9090/features | python -m json.tool
+----
+
+
+=== Grade, Fix, Cleanup
+To grade your work, run the following command: 
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab grade client_capsule
+----
+
+If you encounter an issue and require assistance with completing the lab, run the following command:
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab fix client_capsule
+----
+
+Finally, clean the lab environment before proceeding to the next exercise.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# lab clean client_capsule
 ----
