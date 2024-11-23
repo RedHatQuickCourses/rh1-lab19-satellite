@@ -4,15 +4,12 @@ In this hands-on troubleshooting lab we will troubleshoot common issues that are
 
 This lab provides real-world scenarios to help you diagnose and resolve content synchronization, execution and client connectivity issues in Red Hat Satellite.
 
-.Key skills covered:
-
-****
-Include:
-    - Validate and rectify issues with repositories and synchronization of Satellite and Capsules
-    - Tune Satellite server to resolve performance issues
-    - Troubleshoot client connectivity and registration
-    - Investigate Remote Execution failures
-****
+Concepts included in this scenario:
+   
+* Validating and rectifying content synchronization issues affecting Satellite and Capsules
+* Tuning Satellite server to resolve performance issues
+* Troubleshooting client connectivity and registration
+* Investigating Remote Execution failures
 
 
 === Lab Access
