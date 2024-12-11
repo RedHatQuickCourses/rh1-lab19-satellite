@@ -2,34 +2,38 @@
 
 == Introduction
 
-A client not registered with Satellite is unable to access up to date content, cannot be centrally managed and does not benefit from the intelligence provided through Red Hat Insights. 
-Remote execution enables running jobs on hosts remotely from Capsules using shell scripts or Ansible tasks and playbooks, making it easier for admins to automate tasks on clients.
-Capsules servers mirror content from Satellite server, bringing content and Satellite services closer to hosts in different geographical or logical locations. Connectivity issues can result in corrupt or inconsistent data being served to clients.
+Connectivity issues prevent clients from accessing Red Hat content including bug and security fixes. +
+This introduces compliance risks and the client is unable to benefit from the intelligence provided by Red Hat Insights. 
+
+Remote execution enables administrators to run tasks simultaneously on multiple hosts using Ansible or shell scripts. +
+Failure to execute causes significant disruption, especially in large Red Hat Satellite deployments.
+
+Capsules servers mirror content from Satellite server, bringing content and Satellite services closer to clients in distinct geographical or logical locations. +
+Connectivity issues between Satellite and Capsules can result in corrupt or inconsistent data being served to clients.
+
+In this module, we will explore scenarios impacting connectivity between Red Hat Satellite, Satellite Capsules, clients and remote execution.
 
 
 == Environment
 * Red Hat Satellite Server 6.15
 * Red Hat Satellite Capsule 6.15
-* RHEL 9 client (not registered with Satellite or Capsule)
+* RHEL 9 client (node 1, already registered with Satellite or Capsule)
+* RHEL 9 client (node 2, not registered with Satellite or Capsule)
 
 
-[#scenario A]
-== [1] Troubleshoot client registration errors
+[#scenario 1]
+== Scenario 1: Troubleshoot client registration errors
 
-=== Scenario
+The objective of this scenario is to investigate and resolve issues which prevents a client from registering with or accessing content from Red Hat Satellite.
 
-Registering a client with Satellite fails.
-NOTE: The goal of this scenario is to investigate and resolve failures which can prevent a client from registering with Red Hat Satellite.
+=== Start the lab
 
-=== Executing the lab start script
-
-To begin the lab, access the bastion node using SSH using the terminal on the right.
+To begin the lab, access the bastion node using SSH in the terminal window.
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # ssh root@{bastion_public_hostname}
 ----
-
 
 Run the following command to introduce the registration failure
 
@@ -39,16 +43,79 @@ Run the following command to introduce the registration failure
 ----
 
 
-=== Task
+=== Issue: Node 1 registration
 
-On the RHEL 9 client, check the registration status
+* Login to node 1
+
+[source,sh,role=execute,subs="attributes"]
+----
+# ssh root@{node1_public_hostname}
+----
+
+* Display registration status. The command is expected to return a failure output.
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # subscription-manager status
 ----
 
-On the Satellite server, generate a Global Registration command (insecure option used to disable SSL validation)
+* Stop the stuck command by pressing Ctrl + C.
+
+* Examine the subscription management log
+
+[source,sh,role=execute,subs="attributes"]
+----
+# tail /var/log/rhsm/rhsm.log
+----
+
+* Inspect the rhsm.conf file
+
+[source,sh,role=execute,subs="attributes"]
+----
+# cat /etc/rhsm/rhsm.conf
+----
+
+* Edit the rhsm.conf file to replace the false hostname with the correct FQDN of the Satellite server.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# sed -i 's/hostname =.*/hostname = satellite.lab.example.com/' /etc/rhsm/rhsm.conf
+# sed -i 's/baseurl =.*/baseurl = https://satellite.lab.example.com/pulp/content' /etc/rhsm/rhsm.conf
+----
+
+* Display registration status. The command is expected to run successfully.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# subscription-manager status
++-------------------------------------------+
+   System Status Details
++-------------------------------------------+
+Overall Status: Disabled
+Content Access Mode is set to Simple Content Access. This host has access to content, regardless of subscription status.
+
+System Purpose Status: Disabled
+----
+
+
+=== Issue: Node 2 registration
+
+* Login to node 2
+
+[source,sh,role=execute,subs="attributes"]
+----
+# ssh root@{node2_public_hostname}
+----
+
+* Display registration status.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# subscription-manager status
+Host is not registered
+----
+
+* On the Satellite server, generate a Global Registration command (insecure option used to disable SSL validation)
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -57,27 +124,59 @@ On the Satellite server, generate a Global Registration command (insecure option
 --insecure true
 ----
 
-On the RHEL 9 client, paste the generated registration command and execute
-
-Note: No route to Satellite host
-
-
-=== Grade, Fix, Cleanup
-To grade your work, run the following command: 
+* On node 2, paste the registration command. The command is expected to fail with error
 
 [source,sh,role=execute,subs="attributes"]
 ----
-# lab grade client_registration
+# set -o pipefail && curl -sS --insecure 'https://satellite.example.com/register?activation_keys=GENERAL&force=1&location_id=2&organization_id=1&setup_insights=0&setup_remote_execution=1&setup_remote_execution_pull=0' -H 'Authorization: Bearer TOKEN' | bash
+  # Running registration
+  #
+  This system is currently not registered.
+  All local data removed
+  subscription-manager is already installed!
+  Proxy error: unable to connect to proxy.example.com:8080: Name or service not known (error code -2)
 ----
 
-If you encounter an issue and require assistance with completing the lab, run the following command:
+* Inspect the rhsm.conf file. We can see that custom proxy settings are in use.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# grep ^proxy /etc/rhsm/rhsm.conf 
+   proxy_hostname = proxy.example.com
+   proxy_scheme = http
+   proxy_port = 8080
+----
+
+* Remove the custom proxy settings
+
+[source,sh,role=execute,subs="attributes"]
+----
+# subscription-manager config --server.proxy_hostname "" --server.proxy_port "" --server.proxy_user "" --server.proxy_password ""
+----
+
+* Run the registration command again. This time the registration is successful.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# set -o pipefail && curl -sS --insecure 'https://satellite.example.com/register?activation_keys=GENERAL&force=1&location_id=2&organization_id=1&setup_insights=0&setup_remote_execution=1&setup_remote_execution_pull=0' -H 'Authorization: Bearer TOKEN' | bash
+#
+# Running registration
+#
+subscription-manager is already installed!
+The system has been registered with ID: 213874ca-6ccf-4e5b-a3f1-147d8f1c521b
+The registered system name is: node2.lab.example.com
+----
+
+
+=== Fix and Cleanup
+If unable to complete the task, run the following command to fix the lab: 
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # lab fix client_registration
 ----
 
-Finally, clean the lab environment before proceeding to the next exercise.
+Clean the lab environment before proceeding to the next exercise.
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -87,26 +186,22 @@ Finally, clean the lab environment before proceeding to the next exercise.
 
 
 
-
-[#scenario B]
-== [2] Troubleshoot Remote Execution
-
-=== Scenario
+[#scenario 2]
+== Scenario 2: Troubleshoot Remote Execution
 
 Running a remote execution job on a client fails.
-NOTE: The goal of this scenario is to investigate and remediate issues preventing remote execution of jobs.
+The objective of this scenario is to investigate and remediate issues preventing remote execution of jobs.
 
-=== Executing the lab start script
+=== Start the lab
 
-To begin the lab, access the bastion node using SSH using the terminal on the right.
+To begin the lab, access the bastion node using SSH in the terminal window.
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # ssh root@{bastion_public_hostname}
 ----
 
-
-Run the following command to introduce remote execution failure (host subnet not assigned to Capsule in Satellite)
+Run the following command to introduce the remote execution failure
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -114,13 +209,18 @@ Run the following command to introduce remote execution failure (host subnet not
 ----
 
 
-=== Task
+=== Issue: Remote execution
 
-On the Satellite server UI, create remote execution job to execute on client.  `Monitor` -> `Jobs` -> `Run job`.
+* On the Satellite server UI, create a remote execution job to execute on node 1. +
+* Navigate to `Monitor` -> `Jobs` -> `Run job`.
 
-Issue: Job failed because no Capsule found to execute job
+* The job failed because no Capsule was found to execute the job
 
-Configure `Fallback to Any Capsule` setting
+* In the Satellite UI, navigate to `Hosts` -> `All Hosts`. Click on node 1 and `Edit`.
+
+* Take note of the hostname displayed in the Content Source field. 
+
+* Configure `Fallback to Any Capsule` setting
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -129,23 +229,18 @@ Configure `Fallback to Any Capsule` setting
 --value=true
 ----
 
+* Run a second job on node 1 by navigation to `Monitor` -> `Jobs` -> `Run job`. This time, the job was successful
 
-=== Grade, Fix, Cleanup
-To grade your work, run the following command: 
 
-[source,sh,role=execute,subs="attributes"]
-----
-# lab grade client_execution
-----
-
-If you encounter an issue and require assistance with completing the lab, run the following command:
+=== Fix and Cleanup
+If unable to complete the task, run the following command to fix the lab: 
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # lab fix client_execution
 ----
 
-Finally, clean the lab environment before proceeding to the next exercise.
+Clean the lab environment before proceeding to the next exercise.
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -155,27 +250,22 @@ Finally, clean the lab environment before proceeding to the next exercise.
 
 
 
+[#scenario 3]
+== Scenario 3: Troubleshoot Capsule Connectivity
 
-[#scenario C]
-== [3] Troubleshoot Capsule Connectivity
-
-=== Scenario
-
-Capsule 
-NOTE: The goal of this scenario is to investigate and remediate issues affecting connectivity between clients and Red Hat Satellite Capsule.
+The objective of this scenario is to investigate and remediate issues affecting connectivity between clients and Red Hat Satellite Capsule.
 
 
-=== Executing the lab start script
+=== Start the lab
 
-To begin the lab, access the bastion node using SSH using the terminal on the right.
+To begin the lab, access the bastion node using SSH in the terminal window.
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # ssh root@{bastion_public_hostname}
 ----
 
-
-Run the following command to introduce the Capsule connectivity failure
+Run the following command to introduce the registration failure
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -183,40 +273,61 @@ Run the following command to introduce the Capsule connectivity failure
 ----
 
 
-=== Task
+=== [WIP] Issue: Capsule connectivity
 
-On the client (already registered to Capsule), check the registration status
-
-[source,sh,role=execute,subs="attributes"]
-----
-# dnf install package
-----
-
-On the Satellite server, check certificate exchange with Capsule
+* On node 1, (already registered to Capsule), display the registration status.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-# curl -v https://capsulerserver FDQN/pulp/api/v2/status/ | python -m json.tool  
-# curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://<capsule_server_FDQN>:9090/features | python3 -m json.tool
+# subscription-manager status
 ----
 
-
-=== Grade, Fix, Cleanup
-To grade your work, run the following command: 
+* Try installing a package. Package installation is expected to fail.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-# lab grade client_capsule
+# dnf install bash-completion
 ----
 
-If you encounter an issue and require assistance with completing the lab, run the following command:
+* On the Capsule, test network ports.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# nc -v mysatellite.example.com 443
+# nc -v mysatellite.example.com 5646
+# nc -v mysatellite.example.com 5647
+----
+
+* On the Satellite server, check the responsiveness of core services.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# hammer ping
+----
+
+* On the Satellite server, check certificate exchange with Capsule. Expected to fail.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# curl -v https://capsule.lab.example.com/pulp/api/v2/status/ | python -m json.tool  
+# curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://capsule.lab.example.com:9090/features | python3 -m json.tool
+----
+
+Cause: A firewall or proxy, which is located between the Satellite and Capsule servers, is making a certificate modification during the certification validation process. It needs to be checked and corrected.
+
+
+
+
+
+=== Fix and Cleanup
+If unable to complete the task, run the following command to fix the lab: 
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # lab fix client_capsule
 ----
 
-Finally, clean the lab environment before proceeding to the next exercise.
+Clean the lab environment before proceeding to the next exercise.
 
 [source,sh,role=execute,subs="attributes"]
 ----
