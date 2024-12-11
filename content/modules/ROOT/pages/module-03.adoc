@@ -71,16 +71,16 @@ View the content view versions on the Satellite and the Lifecycle Environments i
 hammer content-view list
 ----
 
-Note that the <insert content view name here> Content View has 15 published versions.
+Note that the RHEL 9 Content View has 15 published versions.
 
 Let's clean up these up:
 ----
-hammer content-view purge --name <content-view-name> --organization <organization-name>
+hammer content-view purge --name "RHEL 9" --organization "Default Organization"
 ----
 
 View that the content views versions have been purged:
 ----
-hammer content-view version list --content-view <content-view-name>
+hammer content-view version list --content-view "RHEL 9"
 ----
 
 
@@ -88,13 +88,13 @@ By default this will keep the content-view versions that are promoted to Lifecyc
 After consulting with the infrastructure team, they have agreed that they only need 1 unused version.
 Modyfy the previous command, by adding "--count 1" to the previous command to keep only 1 unused version
 ----
-hammer content-view purge --name <content-view-name> --organization <organization-name> --count 1
+hammer content-view purge --name "RHEL 9" --organization "Default Organization" --count 1
 ----
 
 Verify that the content-view versions have been purged:
 View that the content views versions have been purged:
 ----
-hammer content-view version list --content-view <content-view-name>
+hammer content-view version list --content-view "RHEL 9"
 ----
 
 == Cleanup Orphaned Pulp Content
