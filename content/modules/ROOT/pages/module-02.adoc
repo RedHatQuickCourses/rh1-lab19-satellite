@@ -197,7 +197,7 @@ On the Satellite server, check certificate exchange with Capsule
 [source,sh,role=execute,subs="attributes"]
 ----
 # curl -v https://capsulerserver FDQN/pulp/api/v2/status/ | python -m json.tool  
-# curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://capsule server FDQN:9090/features | python -m json.tool
+# curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://<capsule_server_FDQN>:9090/features | python3 -m json.tool
 ----
 
 
