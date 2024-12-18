@@ -17,12 +17,11 @@ In this module, we will explore scenarios impacting connectivity between Red Hat
 == Environment
 * Red Hat Satellite Server 6.15
 * Red Hat Satellite Capsule 6.15
-* RHEL 9 client (node 1, already registered with Satellite or Capsule)
-* RHEL 9 client (node 2, not registered with Satellite or Capsule)
+* RHEL 9 client (Node 2, not registered with Satellite or Capsule)
 
 
 [#scenario 1]
-== Scenario 1: Troubleshoot client registration errors
+== [Scenario 1]: Troubleshoot client registration errors
 
 The objective of this scenario is to investigate and resolve issues which prevents a client from registering with or accessing content from Red Hat Satellite.
 
@@ -43,9 +42,9 @@ Run the following command to introduce the registration failure
 ----
 
 
-=== Issue: Node 1 registration
+=== Issue: Client registration
 
-* Login to node 1
+* Login to node 2
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -75,12 +74,64 @@ Run the following command to introduce the registration failure
 # cat /etc/rhsm/rhsm.conf
 ----
 
+* We can see that custom proxy settings are in use.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# grep ^proxy /etc/rhsm/rhsm.conf 
+   proxy_hostname = proxy.example.com
+   proxy_scheme = http
+   proxy_port = 8080
+----
+
+* Remove the custom proxy settings
+
+[source,sh,role=execute,subs="attributes"]
+----
+# subscription-manager config --server.proxy_hostname "" --server.proxy_port "" --server.proxy_user "" --server.proxy_password ""
+----
+
 * Edit the rhsm.conf file to replace the false hostname with the correct FQDN of the Satellite server.
 
 [source,sh,role=execute,subs="attributes"]
 ----
 # sed -i 's/hostname =.*/hostname = satellite.lab.example.com/' /etc/rhsm/rhsm.conf
 # sed -i 's/baseurl =.*/baseurl = https://satellite.lab.example.com/pulp/content' /etc/rhsm/rhsm.conf
+----
+
+* On the Satellite server, generate a Global Registration command (insecure option used to disable SSL validation)
+
+[source,sh,role=execute,subs="attributes"]
+----
+# hammer host-registration generate-command \
+--activation-keys "My_Activation_Key" \
+--insecure true
+----
+
+* Paste the registration command on Node 2. The command is expected to fail with error
+
+[source,sh,role=execute,subs="attributes"]
+----
+# set -o pipefail && curl -sS --insecure 'https://satellite.example.com/register?activation_keys=GENERAL&force=1&location_id=2&organization_id=1&setup_insights=0&setup_remote_execution=1&setup_remote_execution_pull=0' -H 'Authorization: Bearer TOKEN' | bash
+  # Running registration
+  #
+  This system is currently not registered.
+  All local data removed
+  subscription-manager is already installed!
+  Proxy error: unable to connect to proxy.example.com:8080: Name or service not known (error code -2)
+----
+
+* Run the registration command. This time the registration is successful.
+
+[source,sh,role=execute,subs="attributes"]
+----
+# set -o pipefail && curl -sS --insecure 'https://satellite.example.com/register?activation_keys=GENERAL&force=1&location_id=2&organization_id=1&setup_insights=0&setup_remote_execution=1&setup_remote_execution_pull=0' -H 'Authorization: Bearer TOKEN' | bash
+#
+# Running registration
+#
+subscription-manager is already installed!
+The system has been registered with ID: 213874ca-6ccf-4e5b-a3f1-147d8f1c521b
+The registered system name is: node2.lab.example.com
 ----
 
 * Display registration status. The command is expected to run successfully.
@@ -98,79 +149,8 @@ System Purpose Status: Disabled
 ----
 
 
-=== Issue: Node 2 registration
-
-* Login to node 2
-
-[source,sh,role=execute,subs="attributes"]
-----
-# ssh root@{node2_public_hostname}
-----
-
-* Display registration status.
-
-[source,sh,role=execute,subs="attributes"]
-----
-# subscription-manager status
-Host is not registered
-----
-
-* On the Satellite server, generate a Global Registration command (insecure option used to disable SSL validation)
-
-[source,sh,role=execute,subs="attributes"]
-----
-# hammer host-registration generate-command \
---activation-keys "My_Activation_Key" \
---insecure true
-----
-
-* On node 2, paste the registration command. The command is expected to fail with error
-
-[source,sh,role=execute,subs="attributes"]
-----
-# set -o pipefail && curl -sS --insecure 'https://satellite.example.com/register?activation_keys=GENERAL&force=1&location_id=2&organization_id=1&setup_insights=0&setup_remote_execution=1&setup_remote_execution_pull=0' -H 'Authorization: Bearer TOKEN' | bash
-  # Running registration
-  #
-  This system is currently not registered.
-  All local data removed
-  subscription-manager is already installed!
-  Proxy error: unable to connect to proxy.example.com:8080: Name or service not known (error code -2)
-----
-
-* Inspect the rhsm.conf file. We can see that custom proxy settings are in use.
-
-[source,sh,role=execute,subs="attributes"]
-----
-# grep ^proxy /etc/rhsm/rhsm.conf 
-   proxy_hostname = proxy.example.com
-   proxy_scheme = http
-   proxy_port = 8080
-----
-
-* Remove the custom proxy settings
-
-[source,sh,role=execute,subs="attributes"]
-----
-# subscription-manager config --server.proxy_hostname "" --server.proxy_port "" --server.proxy_user "" --server.proxy_password ""
-----
-
-* Run the registration command again. This time the registration is successful.
-
-[source,sh,role=execute,subs="attributes"]
-----
-# set -o pipefail && curl -sS --insecure 'https://satellite.example.com/register?activation_keys=GENERAL&force=1&location_id=2&organization_id=1&setup_insights=0&setup_remote_execution=1&setup_remote_execution_pull=0' -H 'Authorization: Bearer TOKEN' | bash
-#
-# Running registration
-#
-subscription-manager is already installed!
-The system has been registered with ID: 213874ca-6ccf-4e5b-a3f1-147d8f1c521b
-The registered system name is: node2.lab.example.com
-----
-
-
-
 [#scenario 2]
-== Scenario 2: Troubleshoot Remote Execution
+== [Scenario 2]: Troubleshoot Remote Execution
 
 Running a remote execution job on a client fails.
 The objective of this scenario is to investigate and remediate issues preventing remote execution of jobs.
@@ -217,7 +197,7 @@ Run the following command to introduce the remote execution failure
 
 
 [#scenario 3]
-== Scenario 3: Troubleshoot Capsule Connectivity
+== [Scenario 3]: Troubleshoot Capsule Connectivity
 
 The objective of this scenario is to investigate and remediate issues affecting connectivity between clients and Red Hat Satellite Capsule.
 
