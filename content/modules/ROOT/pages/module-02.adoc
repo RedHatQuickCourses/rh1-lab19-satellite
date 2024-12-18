@@ -168,23 +168,6 @@ The registered system name is: node2.lab.example.com
 ----
 
 
-=== Fix and Cleanup
-If unable to complete the task, run the following command to fix the lab: 
-
-[source,sh,role=execute,subs="attributes"]
-----
-# lab fix client_registration
-----
-
-Clean the lab environment before proceeding to the next exercise.
-
-[source,sh,role=execute,subs="attributes"]
-----
-# lab clean client_registration
-----
-
-
-
 
 [#scenario 2]
 == Scenario 2: Troubleshoot Remote Execution
@@ -230,23 +213,6 @@ Run the following command to introduce the remote execution failure
 ----
 
 * Run a second job on node 1 by navigation to `Monitor` -> `Jobs` -> `Run job`. This time, the job was successful
-
-
-=== Fix and Cleanup
-If unable to complete the task, run the following command to fix the lab: 
-
-[source,sh,role=execute,subs="attributes"]
-----
-# lab fix client_execution
-----
-
-Clean the lab environment before proceeding to the next exercise.
-
-[source,sh,role=execute,subs="attributes"]
-----
-# lab clean client_execution
-----
-
 
 
 
@@ -314,22 +280,3 @@ Run the following command to introduce the registration failure
 ----
 
 Cause: A firewall or proxy, which is located between the Satellite and Capsule servers, is making a certificate modification during the certification validation process. It needs to be checked and corrected.
-
-
-
-
-
-=== Fix and Cleanup
-If unable to complete the task, run the following command to fix the lab: 
-
-[source,sh,role=execute,subs="attributes"]
-----
-# lab fix client_capsule
-----
-
-Clean the lab environment before proceeding to the next exercise.
-
-[source,sh,role=execute,subs="attributes"]
-----
-# lab clean client_capsule
-----
