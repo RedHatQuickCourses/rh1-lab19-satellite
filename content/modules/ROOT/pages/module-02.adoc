@@ -13,12 +13,12 @@ Connectivity issues between Satellite and Capsules can result in corrupt or inco
 
 In this module, we will explore scenarios impacting connectivity between Red Hat Satellite, Satellite Capsules, clients and remote execution.
 
-
 == Environment
 * Red Hat Satellite Server 6.15
 * Red Hat Satellite Capsule 6.15
 * RHEL 9 client (Node 2, not registered with Satellite or Capsule)
 
+{empty} +
 
 [#scenario 1]
 == [Scenario 1]: Troubleshoot client registration errors
@@ -44,7 +44,7 @@ Run the following command to introduce the registration failure
 
 === Issue: Client registration
 
-* Login to node 2
+* Login to Node 2
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -148,6 +148,7 @@ Content Access Mode is set to Simple Content Access. This host has access to con
 System Purpose Status: Disabled
 ----
 
+{empty} +
 
 [#scenario 2]
 == [Scenario 2]: Troubleshoot Remote Execution
@@ -174,12 +175,12 @@ Run the following command to introduce the remote execution failure
 
 === Issue: Remote execution
 
-* On the Satellite server UI, create a remote execution job to execute on node 1. +
+* On the Satellite server UI, create a remote execution job to execute on Node 2. +
 * Navigate to `Monitor` -> `Jobs` -> `Run job`.
 
 * The job failed because no Capsule was found to execute the job
 
-* In the Satellite UI, navigate to `Hosts` -> `All Hosts`. Click on node 1 and `Edit`.
+* In the Satellite UI, navigate to `Hosts` -> `All Hosts`. Click on Node 2 and `Edit`.
 
 * Take note of the hostname displayed in the Content Source field. 
 
@@ -192,9 +193,9 @@ Run the following command to introduce the remote execution failure
 --value=true
 ----
 
-* Run a second job on node 1 by navigation to `Monitor` -> `Jobs` -> `Run job`. This time, the job was successful
+* Run a second job on Node 2 by navigation to `Monitor` -> `Jobs` -> `Run job`. This time, the job was successful
 
-
+{empty} +
 
 [#scenario 3]
 == [Scenario 3]: Troubleshoot Capsule Connectivity
@@ -221,7 +222,7 @@ Run the following command to introduce the registration failure
 
 === [WIP] Issue: Capsule connectivity
 
-* On node 1, (already registered to Capsule), display the registration status.
+* On Node 2, (already registered to Capsule), display the registration status.
 
 [source,sh,role=execute,subs="attributes"]
 ----
