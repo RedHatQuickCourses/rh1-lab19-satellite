@@ -29,7 +29,7 @@ Run the following command to introduce the registration failure.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-lab break client_registration
+lab client_registration
 ----
 
 
@@ -183,25 +183,29 @@ lab break client_execution
 
 === Task: Remote execution
 
-* On the Satellite server UI, create a remote execution job to execute on `node2`. +
+* On the Satellite server UI, create a Remote execution job to execute on `node2`. +
 * Navigate to `Monitor` -> `Jobs` -> `Run job`.
 
-* The job failed because no Capsule was found to execute the job
+    Job Category: Commands
+    Job template: Run Command - Script Default
 
-* In the Satellite UI, navigate to `Hosts` -> `All Hosts`. Click on `node2` and `Edit`.
+* Click `Next`
 
-* Take note of the hostname displayed in the Content Source field. 
+    Target hosts and input: node2
+    command: date
 
-* Configure `Fallback to Any Capsule` setting
+* Click `Run on selected hosts`
+
+* Examine the job output. The job fails because the Remote Execution SSH public key used by the Satellite server does not exist on `node2`.
+
+* On `satellite`, copy the SSH public key to `node2`.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-hammer settings set \
---name=remote_execution_fallback_proxy \
---value=true
+scp /var/lib/foreman-proxy/ssh/id_rsa_foreman_proxy.pub node2:~/.ssh/authorized_keys 
 ----
 
-* Run a second job on `node2` by navigation to `Monitor` -> `Jobs` -> `Run job`. This time, the job was successful
+* Re-run the Remote Execution job on `node2`. The job should run successfully.
 
 {empty} +
 
