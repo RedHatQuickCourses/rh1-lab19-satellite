@@ -44,7 +44,7 @@ Let's start by first by clarifying environmental parameters that could affect th
 
   For our use case, the client will be assigned to a "RHEL9-CV" content view available on the Capsule.
 
-To obtain the package count of the enabled repositories on a RHEL system, simply execute the command below on your RHEL server `RHEL9Client`
+To obtain the package count of the enabled repositories on a RHEL system, simply execute the command below on your RHEL server `Node1`
 
 [source,sh,role=execute]
 ----
@@ -76,7 +76,7 @@ Total packages: 21,296
 
 NOTE: The difference between `Repo-pkgs` and `Repo-available-pkgs` is due to AppStream enablement. The repo has 21,296 packages, but the client can only access 20,516 packages
 
-With the client using a content view, we know that the client is restricted to the content avilable based on the following 2 factors:
+With the client using a content view, we know that the client is restricted to the content available based on the following 2 factors:
 
 * When was the content view published
 
