@@ -173,13 +173,6 @@ Access the bastion node through the terminal on the right, or using SSH and swit
 sudo -i
 ----
 
-Run the following command to introduce remote execution failure.
-
-[source,sh,role=execute,subs="attributes"]
-----
-lab break client_execution
-----
-
 
 === Task: Remote execution
 
