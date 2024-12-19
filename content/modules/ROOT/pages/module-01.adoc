@@ -42,7 +42,7 @@ Let's start by first by clarifying environmental parameters that could affect th
 
 * If the system is registered to a Red Hat Satellite, is the system assigned to a content view with any filtering of content?
 
-  For our use case, the client will be assigned to a "RHEL 9" content view available on the Capsule.
+  For our use case, the client will be assigned to a "RHEL9-CV" content view available on the Capsule.
 
 To obtain the package count of the enabled repositories on a RHEL system, simply execute the command below on your RHEL server `RHEL9Client`
 
