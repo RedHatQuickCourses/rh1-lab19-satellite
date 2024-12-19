@@ -250,3 +250,51 @@ This means that the automated cronjob will run at 7:45PM every day.
 
 == Scheduling Capsule Syncs
 
+By default, the Capsule Server will automatically synchonize new and updated content views that are in the Capsule's assigned lifecycle environments. This is usually beneficial, but when making large numbers of changes to conten-views, it may be beneficial to schedule the Capsule synchonizations at the end of the publication and promotion of the content views. 
+
+Open the Tasks UI in the Satellite Web UI by clicking on Monitor > Tasks
+
+Publish and Promote a content view:
+
+[source,sh,role=execute,subs="attributes"]
+----
+sudo hammer content-view publish --name "RHEL9-CV" --organization "Default Organization" --lifecycle-environments Development,Test,Production
+----
+
+In the Satellite Web UI you may observe that the Content View Publish and Promote tasks are created, as well as an Sync task for the capsule server.
+
+
+To disable this functionality:
+
+[source,sh,role=execute,subs="attributes"]
+----
+hammer settings set -id foreman_proxy_content_auto_sync --value false
+----
+
+Then Publish a Content View:
+
+[source,sh,role=execute,subs="attributes"]
+----
+sudo hammer content-view publish --name "RHEL9-CV" --organization "Default Organization" --lifecycle-environments Development,Test,Production
+----
+
+Observe that in the Satellite Web UI that a Capsule Synchronization task is not created.
+
+
+Execute a capsule sync task now that the content views have completed publishing and promoting.
+[source,sh,role=execute,subs="attributes"]
+----
+sudo hammer capsule content synchronize --id 2
+----
+
+Observe that in the Satellite Web UI that a Capsule Synchronization task has been created and completes quickly.
+
+Once this completes, enable the function for automatic content synchronization for Capsules:
+
+[source,sh,role=execute,subs="attributes"]
+----
+hammer settings set -id foreman_proxy_content_auto_sync --value true
+----
+
+This lab is now complete.
+
