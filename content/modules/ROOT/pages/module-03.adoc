@@ -268,7 +268,7 @@ To disable this functionality:
 
 [source,sh,role=execute,subs="attributes"]
 ----
-hammer settings set -id foreman_proxy_content_auto_sync --value false
+hammer settings set --id foreman_proxy_content_auto_sync --value false
 ----
 
 Then Publish a Content View:
@@ -293,7 +293,7 @@ Once this completes, enable the function for automatic content synchronization f
 
 [source,sh,role=execute,subs="attributes"]
 ----
-hammer settings set -id foreman_proxy_content_auto_sync --value true
+hammer settings set --id foreman_proxy_content_auto_sync --value true
 ----
 
 This lab is now complete.
