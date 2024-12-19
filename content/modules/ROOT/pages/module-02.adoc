@@ -239,7 +239,7 @@ image::capsule_failure.png[]
 
 [source,sh,role=execute,subs="attributes"]
 ----
-curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://{node2_public_hostname}:9090/features | python3 -m json.tool
+curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://{capsule_public_hostname}:9090/features | python3 -m json.tool
 ----
 
 * On `capsule`, examine the `foreman-proxy` log.
@@ -279,8 +279,8 @@ Output:
 [source,sh,role=execute,subs="attributes"]
 ----
 capsule-certs-generate \
---foreman-proxy-fqdn {capsule_public_hostname} \
---certs-tar /root/capsule_cert/{capsule_public_hostname}-certs.tar
+--foreman-proxy-fqdn capsule.example.com \
+--certs-tar /root/capsule_cert/capsule.example.com-certs.tar
 ----
 
 Output:
@@ -345,5 +345,7 @@ Output:
 * On the Satellite server UI, check the status of the Capsule server. Navigate to `Infrastructure` -> `Capsules`, then click on `capsule`
 
 * Notice that the Communication status is marked with a green check.
+
+image::capsule_fixed.png[]
 
 This lab is complete.
