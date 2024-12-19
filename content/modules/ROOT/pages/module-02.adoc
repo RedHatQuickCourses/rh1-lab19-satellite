@@ -39,7 +39,7 @@ lab client_registration
 
 [source,sh,role=execute,subs="attributes"]
 ----
-ssh root@{node2_public_hostname}
+ssh root@node2
 ----
 
 * Display registration status. The command is expected to return a failure output.
@@ -227,54 +227,123 @@ lab break client_capsule
 
 === Task: Capsule connectivity
 
-* On `node2`, (already registered to Capsule), display the registration status.
+* On the Satellite server UI, check the status of the Capsule server. Navigate to `Infrastructure` -> `Capsules`, then click on `capsule`
+
+* Notice that the Communication status is marked with a red X.
+
+image::capsule_failure.png[]
+
+{empty} +
+
+* On `satellite`, check certificate exchange with `capsule`. Notice the Capsule features are not listed.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-subscription-manager status
+curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://{node2_public_hostname}:9090/features | python3 -m json.tool
 ----
 
-* Install a package. Note: Package installation is expected to fail.
-
-[source,sh,role=execute,subs="attributes"]
-----
-dnf install bash-completion
-----
-
-* On `capsule`, test network ports.
+* On `capsule`, examine the `foreman-proxy` log.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-nc -v {satellite_public_hostname} 443
+# grep -i '\[E]' /var/log/foreman-proxy/proxy.log
 ----
+
+Output:
+
+    2024-12-19T21:32:22  [E] <Errno::ENOENT> No such file or directory @ rb_sysopen - /etc/foreman-proxy/foreman_ssl_cert.pem
+    2024-12-19T21:32:22  [E] <Errno::ENOENT> No such file or directory @ rb_sysopen - /etc/foreman-proxy/foreman_ssl_cert.pem
+    2024-12-19T21:32:22  [E] <Errno::ENOENT> No such file or directory @ rb_sysopen - /etc/foreman-proxy/foreman_ssl_cert.pem
+
+
+* On `capsule`, inspect the certificates directory. Notice that the `foreman_ssl_cert.pem` certificate file is missing
 
 [source,sh,role=execute,subs="attributes"]
 ----
-nc -v {satellite_public_hostname} 5646
+# ls -l /etc/foreman-proxy/
 ----
+
+Output:
+
+    total 20
+    -rw-r--r--. 1 root root             0 Dec 20  2023 migration_state
+    drwxr-xr-x. 2 root root          4096 Dec 19 21:07 settings.d
+    -rw-r-----. 1 root foreman-proxy 3477 Dec 19 21:05 settings.yml
+    -r--r-----. 1 root foreman-proxy 2496 Dec 19 21:05 ssl_ca.pem
+    -r--r--r--. 1 root foreman-proxy 2175 Dec 19 21:05 ssl_cert.pem
+    -r--r-----. 1 root foreman-proxy 3272 Dec 19 21:05 ssl_key.pem
+
+
+* On `satellite`, generate new certificates for the Capsule.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-nc -v {satellite_public_hostname} 5647
+capsule-certs-generate \
+--foreman-proxy-fqdn {capsule_public_hostname} \
+--certs-tar /root/capsule_cert/{capsule_public_hostname}-certs.tar
 ----
 
-* On `satellite`, check the responsiveness of core services.
+Output:
+
+    satellite-installer --scenario capsule \
+    --certs-tar-file "/root/capsule_cert/capsule.example.com-certs.tar" \
+    --foreman-proxy-register-in-foreman "true" \
+    --foreman-proxy-foreman-base-url "https://satellite.example.com" \
+    --foreman-proxy-trusted-hosts "satellite.example.com" \
+    --foreman-proxy-trusted-hosts "capsule.example.com" \
+    --foreman-proxy-oauth-consumer-key "s97QxvUAgFNAQZNGg4F9zLq2biDsxM7f" \
+    --foreman-proxy-oauth-consumer-secret "6bpzAdMpRAfYaVZtaepYetomgBVQ6ehY"
+
+
+* Copy the certificate bundle to `capsule`.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-hammer ping
+scp /root/capsule_cert/capsule.example.com-certs.tar \
+root@capsule.example.com:/root/capsule.example.com-certs.tar
 ----
 
-* On the `satellite`, check certificate exchange with Capsule. Expected to fail.
+* On `capsule`, run `satellite-installer` command generated in the previous step.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-curl -v https://{capsule_public_hostname}/pulp/api/v2/status/ | python -m json.tool  
+satellite-installer --scenario capsule \
+--certs-tar-file "/root/capsule_cert/capsule.example.com-certs.tar" \
+--foreman-proxy-register-in-foreman "true" \
+--foreman-proxy-foreman-base-url "https://satellite.example.com" \
+--foreman-proxy-trusted-hosts "satellite.example.com" \
+--foreman-proxy-trusted-hosts "capsule.example.com" \
+--foreman-proxy-oauth-consumer-key "s97QxvUAgFNAQZNGg4F9zLq2biDsxM7f" \
+--foreman-proxy-oauth-consumer-secret "6bpzAdMpRAfYaVZtaepYetomgBVQ6ehY"
 ----
+
+* On `capsule`, restart the `foreman-proxy` service.
+[source,sh,role=execute,subs="attributes"]
+----
+systemctl restart foreman.proxy
+----
+
+* On `satellite`, check certificate exchange with the Capsule. This time, the Capsule features are listed.
 
 [source,sh,role=execute,subs="attributes"]
 ----
 curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://{capsule_public_hostname}:9090/features | python3 -m json.tool
 ----
 
-Cause: A firewall or proxy, which is located between the Satellite and Capsule servers, is making a certificate modification during the certification validation process. It needs to be checked and corrected.
+Output:
+
+    [
+    "container_gateway",
+    "dynflow",
+    "logs",
+    "pulpcore",
+    "registration",
+    "script",
+    "templates"
+    ]
+
+* On the Satellite server UI, check the status of the Capsule server. Navigate to `Infrastructure` -> `Capsules`, then click on `capsule`
+
+* Notice that the Communication status is marked with a green check.
+
+This lab is complete.
