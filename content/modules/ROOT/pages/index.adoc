@@ -18,7 +18,7 @@ The terminal window to your right is *already* logged into the lab environment a
 All steps of this lab on the Satellite server, Capsule server and clients are to be completed as the `{root}` user.
 
 == Satellite server web console access:
-  * Web URL: {workshop_satellite_url}
+  * Web URL: {workshop_satellite_url}[window=_blank]
   * User: `{workshop_satellite_user_name}`
   * Password: `{workshop_satellite_user_password}`
 
