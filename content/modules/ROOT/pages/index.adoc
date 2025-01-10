@@ -16,3 +16,33 @@ Concepts included in this scenario:
 
 The terminal window to your right is *already* logged into the lab environment as the `{root}` user via `ssh`. 
 All steps of this lab on the Satellite server, Capsule server and clients are to be completed as the `{root}` user.
+
+== Satellite server web console access:
+  * Web URL: {workshop_satellite_url}
+  * User: `{workshop_satellite_user_name}`
+  * Password: `{workshop_satellite_user_password}`
+
+== Access other instances from Bastion
+
+* Log in to the satellite server from bastion:
+
+[subs=attributes+]
+----
+[lab-user@bastion ~]$ ssh -i ~/.ssh/{guid}key.pem ec2-user@satellite
+----
+
+* Log in to the capsule server from bastion:
+
+[subs=attributes+]
+----
+[lab-user@bastion ~]$ ssh -i ~/.ssh/{guid}key.pem ec2-user@capsule
+----
+
+* Log in to the additional nodes from bastion:
+
+[subs=attributes+]
+----
+[lab-user@bastion ~]$ ssh -i ~/.ssh/{guid}key.pem ec2-user@node1
+[lab-user@bastion ~]$ ssh -i ~/.ssh/{guid}key.pem ec2-user@node2
+[lab-user@bastion ~]$ ssh -i ~/.ssh/{guid}key.pem ec2-user@node3
+----
