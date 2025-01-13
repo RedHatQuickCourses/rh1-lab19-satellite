@@ -18,18 +18,13 @@ In addition, the client does not benefit from the intelligence provided by Red H
 
 The objective of this scenario is to investigate and resolve issues which prevents a client from registering with or accessing content from Red Hat Satellite. +
 
-Access the bastion node through the terminal on the right, or using SSH and switch to root user.
-
-[source,sh,role=execute,subs="attributes"]
-----
-sudo -i
-----
+Access the bastion node through the terminal on the right, or using SSH as the `lab-user`.
 
 Run the following command to introduce the registration failure.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-lab client_registration
+sudo ansible-navigator run --inventory /tmp/hosts --eei quay.io/agnosticd/ee-ubi9-aap2.5:1.0.1 rh1-lab19-satellite/Module_2/break_client_registration.yml -m stdout
 ----
 
 
@@ -39,7 +34,7 @@ lab client_registration
 
 [source,sh,role=execute,subs="attributes"]
 ----
-ssh root@node2
+ssh node2
 ----
 
 * Display registration status. The command is expected to return a failure output.
@@ -74,9 +69,9 @@ grep ^proxy /etc/rhsm/rhsm.conf
 
 Output
 ----
-   proxy_hostname = proxy.example.com
+   proxy_hostname = thisproxygoesnowhere.local
    proxy_scheme = http
-   proxy_port = 8080
+   proxy_port = 
 ----
 
 * Remove the custom proxy settings
@@ -221,7 +216,7 @@ Run the following command to introduce Capsule connectivity failure.
 
 [source,sh,role=execute,subs="attributes"]
 ----
-lab break client_capsule
+sudo ansible-navigator run --inventory /tmp/hosts --eei quay.io/agnosticd/ee-ubi9-aap2.5:1.0.1 rh1-lab19-satellite/Module_2/break_client_capsule.yml -m stdout
 ----
 
 
