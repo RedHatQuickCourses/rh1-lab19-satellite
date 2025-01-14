@@ -38,6 +38,7 @@ ssh satellite
 ----
 
 * Generate a global client registration command using the hammer command on the `satellite` below for the `capsule.{subdomain}`:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo hammer host-registration generate-command \
@@ -95,6 +96,7 @@ curl: (56) Proxy CONNECT aborted
 ----
 grep -Hi ^proxy /etc/rhsm/rhsm.conf && env | grep -i proxy
 ----
+
 Output
 ----
 /etc/rhsm/rhsm.conf:proxy_hostname = 
@@ -206,7 +208,7 @@ sudo -i
 
 [source,sh,role=execute,subs="attributes"]
 ----
-curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://{capsule_public_hostname}:9090/features
+curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://capsule.{subdomain}:9090/features
 ----
 
 * On `capsule` as the root user, examine the `foreman-proxy` log.
@@ -228,7 +230,7 @@ Output:
     2024-12-19T21:32:22  [E] <Errno::ENOENT> No such file or directory @ rb_sysopen - /etc/foreman-proxy/foreman_ssl_cert.pem
 
 
-* On `capsule`, inspect the certificates directory. Notice that the `foreman_ssl_cert.pem` certificate file is missing
+* On `capsule`, inspect the certificates directory. Notice that the `foreman_ssl_cert.pem` certificate file is missing:
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -254,6 +256,7 @@ satellite-installer --scenario capsule
 ----
 
 * On `capsule`, restart the `foreman-proxy` service.
+
 [source,sh,role=execute,subs="attributes"]
 ----
 systemctl restart foreman.proxy
@@ -263,7 +266,7 @@ systemctl restart foreman.proxy
 
 [source,sh,role=execute,subs="attributes"]
 ----
-curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://{capsule_public_hostname}:9090/features | python3 -m json.tool
+curl --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem --cacert /etc/foreman/proxy_ca.pem https://capsule.{subdomain}:9090/features | python3 -m json.tool
 ----
 
 Output:
@@ -278,7 +281,7 @@ Output:
     "templates"
     ]
 
-* On the Satellite server UI, check the status of the Capsule server. Navigate to `Infrastructure` -> `Capsules`, then click on `capsule`
+* On the Satellite server UI, check the status of the Capsule server. Navigate to `Infrastructure` -> `Capsules`, then click on `capsule.{subdomain}`
 
 * Notice that the Communication status is marked with a green check.
 
