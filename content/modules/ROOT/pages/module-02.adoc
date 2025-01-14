@@ -259,7 +259,7 @@ satellite-installer --scenario capsule
 
 [source,sh,role=execute,subs="attributes"]
 ----
-systemctl restart foreman.proxy
+systemctl restart foreman-proxy
 ----
 
 * On `satellite` as root, check the certificate exchange with the Capsule using the curl command below. This time, the Capsule features are listed.
