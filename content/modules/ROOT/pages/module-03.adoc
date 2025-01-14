@@ -11,6 +11,7 @@ The primary goal of this scenario is to investigate performance and maintenance 
 
 
 In this exercise setup, you first need to run the command to break the lab:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo ansible-navigator run --inventory /tmp/hosts --eei quay.io/agnosticd/ee-ubi9-aap2.5:1.0.1 rh1-lab19-satellite/Module_3/break_module3.yml -m stdout
@@ -23,24 +24,28 @@ sudo ansible-navigator run --inventory /tmp/hosts --eei quay.io/agnosticd/ee-ubi
 Other teams in your organization have notified you that the Satellite Server does not seem to be performing well. The Server has had additional memory and CPU added to the virtual machine as your organization provisions thousands of hosts and performance managing the hosts is still slow. You have been asked to implement tuning based on the additional hardware of the Satellite Server.
 
 Login to the `satellite` server from the `bastion`:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 ssh satellite
----
+----
 
 Inspect the new number of CPU cores
+
 [source,sh,role=execute,subs="attributes"]
 ----
 nproc
----
+----
 
 Inspect the new amount of memory
+
 [source,sh,role=execute,subs="attributes"]
 ----
 free -h
----
+----
 
 Inspect the current tuning
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
@@ -49,12 +54,14 @@ sudo grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
 Based upon the results of the above commands, the Satellite has 8 cores and 62 Gi of RAM. The recommended tuning profile is Medium, which does not match the default tuning profile that is currently applied.
 
 Apply the Medium tuning profile
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo satellite-installer --tuning medium
 ----
 
 Verify that the Profile has been applied
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo grep tuning /etc/foreman-installer/scenarios.d/last_scenario.yaml
@@ -69,6 +76,7 @@ The number of Content View versions will continue to grow as Satellite continues
 The infrastructure team in your organization has been experimenting with different combinations of packages and content filters in the Satellite Server. This has created a large number of content view versions on the Satellite that are obsolete.
 
 View the content view versions on the Satellite and the Lifecycle Environments in which they are published:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo hammer content-view version list --content-view "RHEL9-CV" --organization "Default Organization"
@@ -77,12 +85,14 @@ sudo hammer content-view version list --content-view "RHEL9-CV" --organization "
 Note that the RHEL9-CV Content View has 15 published versions.
 
 Let's clean up these up:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo hammer content-view purge --name "RHEL9-CV" --organization "Default Organization"
 ----
 
 View that the content views versions have been purged:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo hammer content-view version list --content-view "RHEL9-CV" --organization "Default Organization"
@@ -92,6 +102,7 @@ sudo hammer content-view version list --content-view "RHEL9-CV" --organization "
 By default, this will keep the content-view versions that are promoted to Lifecycle Environments, and 3 unused versions.
 After consulting with the infrastructure team, they have agreed that they only need 1 unused version.
 Modify the previous command, by adding "--count 1" to the previous command to keep only 1 unused version
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo hammer content-view purge --name "RHEL9-CV" --organization "Default Organization" --count 1
@@ -99,6 +110,7 @@ sudo hammer content-view purge --name "RHEL9-CV" --organization "Default Organiz
 
 Verify that the content-view versions have been purged:
 View that the content views versions have been purged:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo hammer content-view version list --content-view "RHEL9-CV" --organization "Default Organization"
@@ -115,6 +127,7 @@ Satellite implements a Cronjob in /etc/cron.d/katello to remove the orphaned con
 In the last scenario, you pruned many content views, there is likely orphaned content on the Satellite Server that needs to be removed.
 
 View the Cronjob on the Satellite:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo cat /etc/cron.d/katello
@@ -130,24 +143,29 @@ sudo du -s /var/lib/pulp
 ----
 
 Execute the command to clean up orphaned content
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo foreman-rake katello:delete_orphaned_content RAILS_ENV=production
 ----
 
 We can then Query the remove orphans task to check its status:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo -i
 ----
+
 [source,sh,role=execute,subs="attributes"]
 ----
 certs="--cacert /etc/pki/katello/certs/katello-server-ca.crt --cert /etc/foreman/client_cert.pem --key /etc/foreman/client_key.pem"
 ----
+
 [source,sh,role=execute,subs="attributes"]
 ----
 hname=$(hostname -f)
 ----
+
 [source,sh,role=execute,subs="attributes"]
 ----
 curl -s $certs https://${hname}/pulp/api/v3/tasks/?name=pulpcore.app.tasks.orphan.orphan_cleanup | json_reformat
@@ -200,6 +218,7 @@ Successful output will look like this:
 ----
 
 Then check the size of /var/lib/pulp once the task is completed:
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo du /var/lib/pulp
@@ -217,6 +236,7 @@ Every upgrade of the Satellite Server you have noticed that the satellite-mainta
 === Task
 
 Check to see if automatic task cleanup is enabled
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo satellite-installer --help | grep foreman-plugin-tasks-automatic-cleanup
@@ -228,12 +248,14 @@ sudo satellite-installer --help | grep foreman-plugin-tasks-automatic-cleanup
 
 
 Note that the automatic cleanup is disabled, enable it.
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo satellite-installer --foreman-plugin-tasks-automatic-cleanup true
 ----
 
 View the schedule for the execution of the task cleanup 
+
 [source,sh,role=execute,subs="attributes"]
 ----
 sudo satellite-installer --help | grep foreman-plugin-tasks-cron-line
