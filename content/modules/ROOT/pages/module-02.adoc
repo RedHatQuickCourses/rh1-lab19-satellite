@@ -72,13 +72,13 @@ curl: (56) Proxy CONNECT aborted
 
 Output
 ----
-* Uses proxy env variable HTTPS_PROXY == 'http://satellite.5ggmq.internal:443'
+* Uses proxy env variable HTTPS_PROXY == 'http://satellite.{subdomain}:443'
 *   Trying 192.168.0.246:443...
-* Connected to satellite.5ggmq.internal (192.168.0.246) port 443 (#0)
+* Connected to satellite.{subdomain} (192.168.0.246) port 443 (#0)
 * allocate connect buffer!
-* Establish HTTP proxy tunnel to satellite.5ggmq.sandbox1734.opentlc.com:443
-> CONNECT satellite.5ggmq.sandbox1734.opentlc.com:443 HTTP/1.1
-> Host: satellite.5ggmq.sandbox1734.opentlc.com:443
+* Establish HTTP proxy tunnel to satellite.{subdomain}:443
+> CONNECT satellite.{subdomain}:443 HTTP/1.1
+> Host: satellite.{subdomain}:443
 > User-Agent: curl/7.76.1
 > Proxy-Connection: Keep-Alive
 > 
@@ -104,8 +104,8 @@ Output
 /etc/rhsm/rhsm.conf:proxy_port = 
 /etc/rhsm/rhsm.conf:proxy_user =
 /etc/rhsm/rhsm.conf:proxy_password =
-HTTPS_PROXY=http://satellite.5ggmq.internal:443
-HTTP_PROXY=http://satellite.5ggmq.internal:80
+HTTPS_PROXY=http://satellite.{subdomain}:443
+HTTP_PROXY=http://satellite.{subdomain}:80
 ----
 
 * From the output, you can see that the proxy settings are coming from the `.bashrc` file of the user. Remove these lines from the user's `.bashrc` file manually and attempt the global registration again. Please be sure to unset the environment variable or restart your shell session before trying the global registration command again:
