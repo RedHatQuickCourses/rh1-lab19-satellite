@@ -11,7 +11,7 @@ content:
 
 ui:
   bundle:
-    url: https://github.com/rhpds/showroom_theme_rh1/releases/download/v0.0.4/ui-bundle.zip
+    url: https://github.com/rhpds/showroom_theme_summit/releases/download/rh-1-2025/ui-bundle.zip
     snapshot: true
   supplemental_files:
     - path: ./content/supplemental-ui
