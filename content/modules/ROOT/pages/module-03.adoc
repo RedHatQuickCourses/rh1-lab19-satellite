@@ -10,11 +10,11 @@ The primary goal of this scenario is to investigate performance and maintenance 
 == Executing the Lab Script
 
 
-In this exercise setup, you first need to run the command to break the lab:
+In this exercise setup, you first need to run the command to break the lab from the Bastion server:
 
 [source,sh,role=execute,subs="attributes"]
 ----
-sudo ansible-navigator run --inventory /tmp/hosts --eei quay.io/agnosticd/ee-ubi9-aap2.5:1.0.1 rh1-lab19-satellite/Module_3/break_module3.yml -m stdout
+ansible-navigator run --inventory /tmp/hosts --eei quay.io/agnosticd/ee-ubi9-aap2.5:1.0.1 rh1-lab19-satellite/Module_3/break_module3.yml -m stdout
 ----
 
 == Satellite Performance Tuning
@@ -287,7 +287,7 @@ To disable this functionality:
 
 [source,sh,role=execute,subs="attributes"]
 ----
-hammer settings set --id foreman_proxy_content_auto_sync --value false
+sudo hammer settings set --id foreman_proxy_content_auto_sync --value false
 ----
 
 Then Publish a Content View:
@@ -312,7 +312,7 @@ Once this completes, enable the function for automatic content synchronization f
 
 [source,sh,role=execute,subs="attributes"]
 ----
-hammer settings set --id foreman_proxy_content_auto_sync --value true
+sudo hammer settings set --id foreman_proxy_content_auto_sync --value true
 ----
 
 This lab is now complete.
