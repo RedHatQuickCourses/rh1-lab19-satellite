@@ -46,7 +46,7 @@ Let's start first by clarifying environmental parameters that could affect the p
 
 * If the system is registered to a Red Hat Satellite, is the system assigned to a content view with any filtering of content?
 
-  For our use case, the client will be assigned to the "RHEL9-CV" content view in the "Development" lifecycle environment(LCE) available on the Capsule.
+  For our use case, the client will be assigned to the "RHEL9-CV" content view in the "Development" lifecycle environment(LCE) available on the Capsule with no content view filters.
 
 To obtain the package count of the enabled repositories on a RHEL system, first log into the client `Node1` from the bastion, become the root user, and then execute the `dnf repolist -v` as seen below:
 
@@ -57,7 +57,7 @@ ssh node1
 
 [source,sh,role=execute]
 ----
-sudo su -
+sudo -i
 ----
 
 [source,sh,role=execute]
@@ -109,7 +109,7 @@ Repo-filename      : /etc/yum.repos.d/redhat.repo
 Total packages: 30,125
 ....
 
-NOTE: The difference between `Repo-pkgs` and `Repo-available-pkgs` is due to AppStream module stream enablement. The repo has 21,828 packages, but the client can only access 20,920 packages.
+NOTE: The difference between `Repo-pkgs` and `Repo-available-pkgs` is due to AppStream module stream enablement. At the date of this lab creation, the repo has 21,828 packages, but the client can only access 20,920 packages.
 
 With the client using a content view, we know that the client is restricted to the content available based on the following 2 factors:
 
@@ -142,7 +142,7 @@ ssh satellite
 
 [source,sh,role=execute]
 ----
-sudo su -
+sudo -i
 ----
 
 [source,sh,role=execute]
@@ -223,7 +223,7 @@ If the `Repo-pkgs` package count on the client matches the package count from th
 [root@satellite ~]# curl -s --cacert $CACERT --cert $ENTCERT --key $ENTKEY $REPOURL$PRIMARYXML | zgrep "metadata packages" | cut -d'"' -f2
 21815
 
-[root@rhel9 ~]# dnf repolist -v | grep "Repo-pkgs"
+[root@node1 ~]# dnf repolist -v rhel-9-for-x86_64-appstream-rpms | grep "Repo-pkgs"
 Red Hat Enterprise Linux 9 for x86_64 - AppStre  82 kB/s | 4.5 kB     00:00    
 Repo-pkgs          : 21,815
 ....
