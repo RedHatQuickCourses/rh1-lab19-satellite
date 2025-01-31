@@ -19,7 +19,7 @@ All steps of this lab on the Satellite server, Capsule server and clients are to
 *Note:* When copying commands for each module, avoid middle click paste (adds additional characters to the commands). 
 
 == Satellite server web console access:
-  * Web URL: {workshop_satellite_url}[window=_blank]
+  * Web URL: `{workshop_satellite_url}`
   * User: `{workshop_satellite_user_name}`
   * Password: `{workshop_satellite_user_password}`
 
