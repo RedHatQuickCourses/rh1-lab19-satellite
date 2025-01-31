@@ -1,10 +1,9 @@
 = Satellite: A Deep Dive into Troubleshooting
 
-In this hands-on troubleshooting lab we will troubleshoot common issues that are encountered in Red Hat Satellite deployments, identify and solve content and synchronization issues, fix client connectivity issues, and show how a Standard Operating Environment enhances the customer experience.
+This hands-on lab provides real-world scenarios to help you diagnose and solve common issues in Red Hat Satellite deployments.
+Topics include troubleshooting content and synchronization issues, client connectivity, and demonstrating how a Standard Operating Environment (SOE) enhances the customer experience.
 
-This lab provides real-world scenarios to help you diagnose and resolve content synchronization, execution and client connectivity issues in Red Hat Satellite.
-
-Concepts included in this scenario:
+Scenarios covered in this lab:
    
 * Validating and rectifying content synchronization issues affecting Satellite and Capsules
 * Tuning Satellite server to resolve performance issues
@@ -14,8 +13,10 @@ Concepts included in this scenario:
 
 === Lab Access
 
-The terminal window to your right is *already* logged into the lab environment as the `{root}` user via `ssh`. 
-All steps of this lab on the Satellite server, Capsule server and clients are to be completed as the `{root}` user.
+The terminal window to your right is *already* logged into the lab environment via SSH as the `{root}` user. 
+All steps of this lab on the Satellite server, Capsule server and clients are to be completed with elevated privileges.
+
+*Note:* When copying commands for each module, avoid middle click paste (adds additional characters to the commands). 
 
 == Satellite server web console access:
   * Web URL: {workshop_satellite_url}[window=_blank]
