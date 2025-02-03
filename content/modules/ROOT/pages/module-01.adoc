@@ -3,17 +3,17 @@
 == Environment
 * Satellite v6.15, Capsule v6.15, RHEL 9 registered client
 * Satellite can access cdn.redhat.com
-* Satellite has repositories synced:
+* Satellite has the following repositories synced:
 ** BaseOS
 ** AppStream
 ** Red Hat Satellite Client 6 for RHEL 9 x86_64 RPMs
-* Satellite has additional Lifecycle Environments (LCE):
+* Satellite has these additional Lifecycle Environments (LCE):
 ** Development
 ** Test
 ** Production
 * Capsule has the above LCEs associated with it
-* A Content view with the above repositories created published and promoted to LCEs above
-* Clients have the repos above enabled on it
+* A Content view with the above repositories created published and promoted to LCEs mentioned above
+* Clients have the above mentioned repos enabled on it
 
 
 
@@ -34,21 +34,21 @@ We’ll only focus on the Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs
 [#guidedsteps]
 == Obtaining Client Package Count
 
-Let's start first by clarifying environmental parameters that could affect the package count on a RHEL system.
+Let's start by clarifying the environmental parameters that could affect the package count on a RHEL system.
 
 * Where is the system obtaining content from (Red Hat Satellite, Red Hat CDN, Public/Private Repo, Local filesystem, etc)?
 
   For our use case, this will be a Red Hat Satellite Capsule.
 
-* Does the system have any local restriction that would skew the package count for the system? (DNF excludes, DNF plugins, Subscription Manager release set, etc)?
+* Does the system have any local restrictions that would skew the package count for the system? (DNF excludes, DNF plugins, Subscription Manager release set, etc)?
 
-  For our use case, the client will have no local restrictions
+  For our use case, the client will have no local restrictions.
 
 * If the system is registered to a Red Hat Satellite, is the system assigned to a content view with any filtering of content?
 
   For our use case, the client will be assigned to the "RHEL9-CV" content view in the "Development" lifecycle environment(LCE) available on the Capsule with no content view filters.
 
-To obtain the package count of the enabled repositories on a RHEL system, first log into the client `Node1` from the bastion, become the root user, and then execute the `dnf repolist -v` as seen below:
+To obtain the package count of the enabled repositories on an RHEL system, first log into the client `Node1` from the bastion, become the root user, and then execute the `dnf repolist -v` as seen below:
 
 [source,sh,role=execute]
 ----
@@ -115,7 +115,7 @@ With the client using a content view, we know that the client is restricted to t
 
 * When was the content view published?
 
-* When was the last successful sync on the Satellite for the "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9" repository before the content view publish?
+* When was the last successful sync on the Satellite for the "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9" repository before the content view was published?
 
 == Accessing the Red Hat CDN
 
@@ -159,7 +159,7 @@ Your output should show an 18-digit filename followed by `.pem` and `-key.pem` l
 
 This is the entitlement certificate and key that will be used to communicate with the Red Hat CDN. The CA certificate used for communication with the CDN is located at `/etc/rhsm/ca/redhat-uep.pem`.
 
-By using the information we have found we are now able to access the RHEL 9 AppStream repository on the CDN. Use the command syntax below to build your curl command to query the CDN:
+By using the information we have found, we are now able to access the RHEL 9 AppStream repository on the CDN. Use the command syntax below to build your curl command to query the CDN:
 ....
 curl --cacert <CA CERT> --cert <ENTITLEMENT CERT> --key <ENTITLEMENT KEY> <CDN URL>
 ....
@@ -248,9 +248,12 @@ Once the repository has synced successfully, you can query for the repository co
 hammer repository info --name "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9" --product "Red Hat Enterprise Linux for x86_64" --organization "Default Organization" --fields "Content counts/packages"
 ----
 
-Once you have confirmed the package count for the "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9" repository matches that of the package count from the curl command performed on the CDN, it's time to update the content view associated with the client.
+Once you have confirmed that package count for the "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9" repository matches that of the package count from the curl command performed on the CDN, it's time to update the content view associated with the client.
 
-Before publishing the content view, it is good practice to check the content view for any filtering that may have been applied to the content view previously and adjust the filters as needed to ensure packages are included/excluded as expected. For this example, there are no content view filters implemented so the package count on the client using the content view should be identical to that of the Satellite. Use the command below to check the content view filters for the `RHEL9-CV` content view:
+Before publishing the content view, it is a good practice to check the content view for any filtering that may have been applied to the content view previously and adjust the filters as needed to ensure that the packages are included/excluded as expected. For this example, there are no content view filters implemented so the package count on the client using the content view should be identical to that of the Satellite. 
+
+
+Use the command below to check the content view filters for the `RHEL9-CV` content view:
 
 [source,sh,role=execute]
 ----
@@ -284,7 +287,7 @@ node3.jtxlz.internal | RHEL9-CV     | Development
 ---------------------|--------------|----------------------
 ....
 
-Now that we know the client is assigned to the `Development` lifecycle environment, we know we can publish a new version of the `RHEL9-CV` content view and promote it to the `Development` lifecycle. Run the following command to perform this action:
+Now that we know the client is assigned to the `Development` lifecycle environment, we know that we can publish a new version of the `RHEL9-CV` content view and promote it to the `Development` lifecycle. Run the following command to perform this action:
 
 [source,sh,role=execute]
 ----
@@ -297,9 +300,13 @@ The Satellite's setting `foreman_proxy_content_auto_sync` is `True` (True by def
 
 After the Capsule sync has completed you could view the Satellite WebUI or use the hammer command to query the package count for the repository on the Capsule. However, this doesn't actually query the Capsule for its package count. This provides a package count based on what the Satellite believes it to have.
 
-Additionally, you could use a client to query the repository to see the package count, but then you are assuming the client is accessing the newly updated repository that was just synced (which it should be). So how can we query the Capsule server for the package count of the newly synced repo for its package count?
+Additionally, you could use a client to query the repository to see the package count, but then you are assuming the client is accessing the newly updated repository that was just synced (which it should be). 
 
-The easiest method (without having to install any additional packages) would be to use the Pulp service's API on the Capsule. To query this information from the API you will need to know the HREF for the repository that the Satellite synced to on the Capsule server. This information can be found in the Capsule sync task that was initiated by the content view publish (if the content was synced and not skipped). Or you can locate the `Backend Identifier` value of the repository from the Satellite WebUI > Content > Products > Red Hat Enterprise Linux for x86_64 > Repositories > Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9.
+So how can we query the Capsule server for the package count of the newly synced repo for its package count?
+
+The easiest method (without having to install any additional packages) would be to use the Pulp service's API on the Capsule. To query this information from the API you will need to know the HREF for the repository that the Satellite synced to on the Capsule server. This information can be found in the Capsule sync task that was initiated by the content view publish (if the content was synced and not skipped). 
+
+Or you can locate the `Backend Identifier` value of the repository from the Satellite WebUI > Content > Products > Red Hat Enterprise Linux for x86_64 > Repositories > Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9.
 
 Using the `Backend Identifier` value, use the simple curl command below to view the Capsule's Pulp API response for the repository's package count:
 
@@ -333,4 +340,10 @@ dnf repolist -v
 
 At this point we have come full circle. 
 
-We first started with a single repository seen by the client of a Capsule on a Satellite that downloads the RPMs from the Red Hat CDN. We then verified the packages on the same repository from the CDN with what the client was seeing. To ensure we see the same packages on the client's repository as we do on the CDN, we went through the steps of checking and updating the repositories on both the Satellite and Capsule and finally checked again the packages on the client. With all numbers matching we can safely assume that this client has all available and latest packages from the AppStream repository available to it as the Red Hat CDN provides.
+We started with a single repository on a Capsule, seen by a client, which downloads RPMs from the Red Hat CDN.
+
+Next, we verified the packages in the repository, comparing what the client sees with what is available on the CDN.
+
+To ensure consistency, we checked and updated the repositories on both the Satellite and Capsule. Finally, we verified the packages on the client once again.
+
+With all numbers matching, we can confidently assume that the client has access to all available and latest packages from the AppStream repository, as provided by the Red Hat CDN.

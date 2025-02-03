@@ -101,7 +101,7 @@ sudo hammer content-view version list --content-view "RHEL9-CV" --organization "
 
 By default, this will keep the content-view versions that are promoted to Lifecycle Environments, and 3 unused versions.
 After consulting with the infrastructure team, they have agreed that they only need 1 unused version.
-Modify the previous command, by adding "--count 1" to the previous command to keep only 1 unused version
+Modify the previous command, by adding "--count 1" to the previous command to keep only 1 unused version.
 
 [source,sh,role=execute,subs="attributes"]
 ----
@@ -120,7 +120,7 @@ sudo hammer content-view version list --content-view "RHEL9-CV" --organization "
 
 Content accumulates on a Satellite Server and the on-disk size of content appears to constantly grow. When an administrator deletes a Content View or disables a Repository that disk is not immediately reclaimed. This content is called Orphaned Pulp Content.
 
-Satellite implements a Cronjob in /etc/cron.d/katello to remove the orphaned content, but in many cases, such as a full or near full /var/lib/pulp volume it is useful too to execute the command ad-hoc.
+Satellite implements a Cronjob in /etc/cron.d/katello to remove the orphaned content, but in many cases, such as a full or near full /var/lib/pulp volume it is useful to execute the command ad-hoc.
 
 === Scenario 
 
@@ -227,11 +227,13 @@ sudo du /var/lib/pulp
 == Automate Cleanup of Old Tasks
 
 Cleaning the tasks on the Satellite server is an important task that should be enabled. If not done over a long period of time, tasks will accumulate, which will negatively impact the performance of the Satellite server.
+
+
 This also affects the upgrade of the Satellite server when there is a large number of tasks that are present on the satellite server which is not cleaned. This generally creates issues during upgrades, when commands to clean the system are run, but due to a large number of tasks,
-there isn't enough space present so the cleaning also fails resulting in failing of Satellite upgrades
+there isn't enough space present so the cleaning also fails resulting in failing of Satellite upgrades.
 
 ==== Scenario
-Every upgrade of the Satellite Server you have noticed that the satellite-maintain command has reported that there are many old tasks to clean up. This has extended the upgrade window of the Satellite Server and has also impacted the performance of searching for the status of Remote Execution jobs on the Satellite.
+Every upgrade of the Satellite Server you may have noticed that the satellite-maintain command has reported that there are many old tasks to clean up. This has extended the upgrade window of the Satellite Server and has also impacted the performance of searching for the status of Remote Execution jobs on the Satellite.
 
 === Task
 
