@@ -1,23 +1,22 @@
 = Satellite: A Deep Dive into Troubleshooting
 
-In this hands-on troubleshooting lab we will troubleshoot common issues that are encountered in Red Hat Satellite deployments, identify and solve content and synchronization issues, fix client connectivity issues, and show how a Standard Operating Environment enhances the customer experience.
+In this hands-on troubleshooting lab we will troubleshoot some common issues that are encountered in Red Hat Satellite deployments, identify and solve content and synchronization issues, fix client connectivity issues, and show how a Standard Operating Environment enhances the customer experience.
 
-This lab provides real-world scenarios to help you diagnose and resolve content synchronization, execution and client connectivity issues in Red Hat Satellite.
+This lab provides real-world scenarios to help you diagnose and resolve content synchronization, execution, and client connectivity issues in Red Hat Satellite.
 
-Concepts included in this scenario:
+Objectives:
    
 * Validating and rectifying content synchronization issues affecting Satellite and Capsules
 * Tuning Satellite server to resolve performance issues
 * Troubleshooting client connectivity and registration
-* Investigating Remote Execution failures
+* Investigating remote execution failures
 
 
 === Lab Access
 
-The terminal window to your right is *already* logged into the lab environment as the `{root}` user via `ssh`. 
-All steps of this lab on the Satellite server, Capsule server and clients are to be completed as the `{root}` user.
+The terminal window to your right is *already* logged into the lab environment as the `{root}` user via `ssh`. As the `{root}`` user, you must complete every step of this lab on the clients, satellite server, and capsule server.
 
-== Satellite server web console access:
+== Satellite server web console access
   * Web URL: {workshop_satellite_url}[window=_blank]
   * User: `{workshop_satellite_user_name}`
   * Password: `{workshop_satellite_user_password}`
